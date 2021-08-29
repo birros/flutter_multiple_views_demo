@@ -8,6 +8,11 @@ void main(List<String> args) {
   }
 }
 
+@pragma('vm:entry-point')
+void myOtherEntrypoint() {
+  runApp(MyApp2());
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
