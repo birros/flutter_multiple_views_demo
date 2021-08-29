@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "wrapper.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -27,7 +28,7 @@ static void my_application_activate(GApplication* application) {
   // in case the window manager does more exotic layout, e.g. tiling.
   // If running on Wayland assume the header bar will work (may need changing
   // if future cases occur).
-  gboolean use_header_bar = TRUE;
+  gboolean use_header_bar = FALSE;
 #ifdef GDK_WINDOWING_X11
   GdkScreen *screen = gtk_window_get_screen(window);
   if (GDK_IS_X11_SCREEN(screen)) {
@@ -56,9 +57,26 @@ static void my_application_activate(GApplication* application) {
 
   FlView* view = fl_view_new(project);
   gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+
+  // project2
+  g_autoptr(FlDartProject) project2 = fl_dart_project_new();
+  g_autoptr(GStrvBuilder) builder = g_strv_builder_new();
+  guint n;
+  for (n = 0; self->dart_entrypoint_arguments[n] != NULL; n++){
+    g_strv_builder_add(builder, g_strdup(self->dart_entrypoint_arguments[n]));
+  }
+  g_strv_builder_add(builder, "MyApp2");
+  g_auto(GStrv) args = g_strv_builder_end(builder);
+  fl_dart_project_set_dart_entrypoint_arguments(project2, args);
+
+  // view2
+  FlView* view2 = fl_view_new(project2);
+  gtk_widget_show(GTK_WIDGET(view2));
+
+  wrapper_setup(GTK_CONTAINER(window), view, view2);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  fl_register_plugins(FL_PLUGIN_REGISTRY(view2));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
